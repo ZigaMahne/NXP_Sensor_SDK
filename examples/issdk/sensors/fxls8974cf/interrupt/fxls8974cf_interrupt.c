@@ -22,6 +22,7 @@
 //-----------------------------------------------------------------------
 // CMSIS Includes
 //-----------------------------------------------------------------------
+#include "cmsis_os2.h"
 #include "Driver_I2C.h"
 
 //-----------------------------------------------------------------------
@@ -63,6 +64,16 @@ volatile bool gFxls8974DataReady = false;
 // Functions
 //-----------------------------------------------------------------------
 /*! -----------------------------------------------------------------------
+ *  @brief       This function is executed in case of error occurrence.
+ *  -----------------------------------------------------------------------*/
+static void Error_Handler(void)
+{
+  while(1)
+  {
+  }
+}
+
+/*! -----------------------------------------------------------------------
  *  @brief       This is the Sensor Data Ready ISR implementation.
  *  @details     This function sets the flag which indicates if a new sample(s) is available for reading.
  *  @param[in]   pUserData This is a void pointer to the instance of the user specific data structure for the ISR.
@@ -75,17 +86,12 @@ void fxls8974_int_data_ready_callback(void *pUserData)
     gFxls8974DataReady = true;
 }
 
-/*! -----------------------------------------------------------------------
- *  @brief       This is the The main function implementation.
- *  @details     This function invokes board initializes routines, then then brings up the sensor and
- *               finally enters an endless loop to continuously read available samples.
- *  @param[in]   void This is no input parameter.
- *  @return      void  There is no return value.
- *  @constraints None
- *  @reeentrant  No
- *  -----------------------------------------------------------------------*/
-int main(void)
-{
+/*---------------------------------------------------------------------------
+ * Application main thread
+ *---------------------------------------------------------------------------*/
+static void app_main(void *argument) {
+    (void)argument;
+
     int32_t status;
     uint8_t whoami;
     uint8_t data[FXLS8974_DATA_SIZE];
@@ -95,26 +101,21 @@ int main(void)
     fxls8974_i2c_sensorhandle_t fxls8974Driver;
     GENERIC_DRIVER_GPIO *pGpioDriver = &Driver_GPIO_KSDK;
 
-    /*! Initialize the MCU hardware. */
-    BOARD_InitPins();
-    BOARD_BootClockRUN();
-    BOARD_SystickEnable();
-    BOARD_InitDebugConsole();
-
     PRINTF("\r\n ISSDK FXLS8974 sensor driver example demonstration with interrupt mode.\r\n");
 
-    /*! Initialize FXLS8974 pin used by FRDM board */
+    /*! Initialize FXLS8974 pin used by base board */
     pGpioDriver->pin_init(&FXLS8974_INT1, GPIO_DIRECTION_IN, NULL, &fxls8974_int_data_ready_callback, NULL);
 
-    /*! Initialize RGB LED pin used by FRDM board */
+    PRINTF("\r\n Detection pin init OK\r\n");
+    /*! Initialize RGB LED pin used by base board */
     pGpioDriver->pin_init(&GREEN_LED, GPIO_DIRECTION_OUT, NULL, NULL, NULL);
-
+    PRINTF("\r\n Green LED init OK\r\n");
     /*! Initialize the I2C driver. */
     status = I2Cdrv->Initialize(I2C_S_SIGNAL_EVENT);
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C Power mode. */
@@ -122,7 +123,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Power Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C bus speed. */
@@ -130,7 +131,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Control Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Initialize FXLS8974 sensor driver. */
@@ -139,7 +140,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n Sensor Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
     if ((FXLS8964_WHOAMI_VALUE == whoami) || (FXLS8967_WHOAMI_VALUE == whoami))
     {
@@ -166,7 +167,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n FXLS8974 Sensor Configuration Failed, Err = %d\r\n", status);
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n Successfully Applied FXLS8974 Sensor Configuration\r\n");
 
@@ -189,7 +190,7 @@ int main(void)
         if (ARM_DRIVER_OK != status)
         {
             PRINTF("\r\n Read Failed. \r\n");
-            return -1;
+            Error_Handler();
         }
 
         /*! Process the sample and convert the raw sensor data. */
@@ -201,4 +202,10 @@ int main(void)
         PRINTF("\r\n X=%5d Y=%5d Z=%5d\r\n", rawData.accel[0], rawData.accel[1], rawData.accel[2]);
         ASK_USER_TO_RESUME(50); /* Ask for user input after processing 50 samples. */
     }
+}
+/*---------------------------------------------------------------------------
+ * Application initialization
+ *---------------------------------------------------------------------------*/
+void app_initialize (void) {
+  osThreadNew(app_main, NULL, NULL);
 }
