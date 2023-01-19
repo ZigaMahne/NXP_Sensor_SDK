@@ -28,6 +28,8 @@ solution:
       device: NXP::LPC54114J256BD64:cm4
       define:
         - CPU_LPC54114J256BD64_cm4
+        - LPCXPRESSO54114
+        - LPCXPRESSO
       variables:
         - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/lpcxpresso54114/lpcxpresso54114.clayer.yml
