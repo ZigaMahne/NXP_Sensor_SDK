@@ -72,6 +72,9 @@ layer:
     - component: NXP::Device:SDK Utilities:serial_manager
     - component: NXP::Device:SDK Utilities:serial_manager_uart
     - component: NXP::Device:Startup
+    - component: Keil::Compiler&ARM Compiler:I/O:STDERR&User
+    - component: Keil::Compiler&ARM Compiler:I/O:STDOUT&User
+    - component: Keil::Compiler&ARM Compiler:I/O:STDIN&User
 
   groups:
     - group: gpio_driver
@@ -82,6 +85,8 @@ layer:
         - file: ../../middleware/issdk/drivers/gpio/Driver_GPIO.h
     - group: board
       files:
+        - file: ./main.c
+        - file: ./retarget_stdio.c
         - file: ./frdm_k22f.c
         - file: ./frdm_k22f.h
         - file: ./RTE/Device/MK22FN512VLH12/MK22FN512xxx12_flash.scf
