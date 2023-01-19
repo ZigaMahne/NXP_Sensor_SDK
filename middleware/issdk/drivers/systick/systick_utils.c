@@ -23,13 +23,13 @@
 uint32_t g_ovf_stamp;
 volatile uint32_t g_ovf_counter = 0;
 
-#ifndef SDK_OS_FREE_RTOS
-// SDK specific SysTick Interrupt Handler
-void SysTick_Handler(void)
-{
-    g_ovf_counter += 1;
-}
-#endif
+//#ifndef SDK_OS_FREE_RTOS
+//// SDK specific SysTick Interrupt Handler
+//void SysTick_Handler(void)
+//{
+//    g_ovf_counter += 1;
+//}
+//#endif
 
 // ARM-core specific function to enable systicks.
 void BOARD_SystickEnable(void)

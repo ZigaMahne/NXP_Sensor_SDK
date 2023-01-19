@@ -43,6 +43,10 @@
       <description>GPIO LPC devices</description>
       <!-- ToDo -->
     </condition>
+    <condition id="GPIO IMX">
+      <description>GPIO iMX devices</description>
+      <!-- ToDo -->
+    </condition>
     <condition id="ISSDK HAL">
       <description>ISSDK HAL</description>
       <!-- ToDo -->
@@ -99,6 +103,14 @@
         <file category="header" name="middleware/issdk/drivers/gpio/lpc/gpio_driver.h"/>
         <file category="source" name="middleware/issdk/drivers/gpio/lpc/gpio_driver.c"/>
         <file category="source" name="middleware/issdk/drivers/gpio/lpc/gpio_driver_irq.c"/>
+      </files>
+    </component>
+    <component Cclass="Driver" Cgroup="GPIO" Csub="IMX" Capiversion="1.0.0" Cversion="1.0.0" condition="GPIO IMX">
+      <description>GPIO Driver for iMX devices</description>
+      <files>
+        <file category="header" name="middleware/issdk/drivers/gpio/i.mx/gpio_driver.h"/>
+        <file category="source" name="middleware/issdk/drivers/gpio/i.mx/gpio_driver.c"/>
+        <file category="source" name="middleware/issdk/drivers/gpio/i.mx/gpio_driver_irq.c"/>
       </files>
     </component>
     <!-- ISSDK -->

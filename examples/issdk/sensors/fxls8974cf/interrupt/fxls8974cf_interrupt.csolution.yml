@@ -7,6 +7,10 @@ solution:
     - pack: NXP::LPC54114_DFP@13.0.0
     - pack: NXP::FRDM-K22F_BSP@15.0.1
     - pack: NXP::LPCXpresso54114_BSP@13.0.0
+    - pack: NXP::MIMXRT1052_DFP@15.1.0
+    - pack: NXP::EVKB-IMXRT1050_BSP@15.1.0
+    - pack: Keil::IMXRT1050-EVKB_BSP@1.1.1
+    - pack: Keil::iMXRT105x_MWP@1.5.1
     - pack: ARM::CMSIS@5.9.0
     - pack: ARM::CMSIS-Driver
     - pack: Keil::ARM_Compiler
@@ -33,6 +37,17 @@ solution:
       variables:
         - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/lpcxpresso54114/lpcxpresso54114.clayer.yml
+        - Shield-Layer: ../../../../../shields/a8974/a8974.clayer.yml
+    - type: IMXRT1050-EVKB_a8974
+      board: NXP::EVKB-IMXRT1050_MDK
+   #  device: NXP::MIMXRT1052DVL6B
+      define:
+        - CPU_MIMXRT1052DVL6B
+        - EVKB_IMXRT1050
+        - IMX
+      variables:
+        - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
+        - Board-Layer:  ../../../../../boards/IMXRT1050-EVKB/IMXRT1050-EVKB.clayer.yml
         - Shield-Layer: ../../../../../shields/a8974/a8974.clayer.yml
 
   build-types:
