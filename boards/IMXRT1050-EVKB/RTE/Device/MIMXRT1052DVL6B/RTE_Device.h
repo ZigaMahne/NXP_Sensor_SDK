@@ -131,9 +131,9 @@
 /* I2C Select */
 /* User needs to provide the implementation of I2CX_GetFreq/I2CX_InitPins/I2CX_DeinitPins for the enabled I2C instance.
  */
-#define RTE_I2C0        0
-#define RTE_I2C0_DMA_EN 0
-#define RTE_I2C1        1
-#define RTE_I2C1_DMA_EN     0
+#define RTE_I2C0             0
+#define RTE_I2C0_DMA_EN      0
+#define RTE_I2C1             1
+#define RTE_I2C1_DMA_EN      0
 
 #endif /* _RTE_DEVICE_H */

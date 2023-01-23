@@ -13,12 +13,13 @@
 
 #include "evkbimxrt1050.h"
 
-/* Select USB1 PLL (480 MHz) as master lpi2c clock source */
-#define LPI2C_CLOCK_SOURCE_SELECT (0U)
-/* Clock divider for master lpi2c clock source */
-#define LPI2C_CLOCK_SOURCE_DIVIDER (5U)
-/* Get frequency of lpi2c clock */
-#define LPI2C_CLOCK_FREQUENCY ((CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8) / (LPI2C_CLOCK_SOURCE_DIVIDER + 1U))
+// Following defines are already generated via MCUXpresso
+///* Select USB1 PLL (480 MHz) as master lpi2c clock source */
+//#define LPI2C_CLOCK_SOURCE_SELECT (0U)
+///* Clock divider for master lpi2c clock source */
+//#define LPI2C_CLOCK_SOURCE_DIVIDER (5U)
+///* Get frequency of lpi2c clock */
+//#define LPI2C_CLOCK_FREQUENCY ((CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8) / (LPI2C_CLOCK_SOURCE_DIVIDER + 1U))
 
 // I2C20 Pin Handles
 gpioHandleiMXSDK_t D15 = {
@@ -158,15 +159,15 @@ status_t SMC_SetPowerModeVlpr(void *arg)
 //    return LPI2C_CLOCK_FREQUENCY;
 //}
 
-/*! @brief       Determines the Clock Frequency feature.
- *  @details     The Clock Frequecny computation API required by
- * fsl_spi_cmsis.c.
- *  @param[in]   void
- *  @Constraints None
- *  @Reentrant   Yes
- *  @return      uint32_t Returns the clock frequency .
- */
-uint32_t LPSPI1_GetFreq(void)
-{
-    return CLOCK_GetFreq((clock_name_t)kCLOCK_Lpspi1);
-}
+///*! @brief       Determines the Clock Frequency feature.
+// *  @details     The Clock Frequecny computation API required by
+// * fsl_spi_cmsis.c.
+// *  @param[in]   void
+// *  @Constraints None
+// *  @Reentrant   Yes
+// *  @return      uint32_t Returns the clock frequency .
+// */
+//uint32_t LPSPI1_GetFreq(void)
+//{
+//    return CLOCK_GetFreq((clock_name_t)kCLOCK_Lpspi1);
+//}
