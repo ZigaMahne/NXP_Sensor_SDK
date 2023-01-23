@@ -32,8 +32,6 @@ solution:
       device: NXP::LPC54114J256BD64:cm4
       define:
         - CPU_LPC54114J256BD64_cm4
-        - LPCXPRESSO54114
-        - LPCXPRESSO
       variables:
         - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/lpcxpresso54114/lpcxpresso54114.clayer.yml
@@ -43,8 +41,6 @@ solution:
    #  device: NXP::MIMXRT1052DVL6B
       define:
         - CPU_MIMXRT1052DVL6B
-        - EVKB_IMXRT1050
-        - IMX
       variables:
         - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/IMXRT1050-EVKB/IMXRT1050-EVKB.clayer.yml

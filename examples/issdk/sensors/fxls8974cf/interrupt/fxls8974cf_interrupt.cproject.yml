@@ -45,10 +45,6 @@ project:
         - file: ../../../../../middleware/issdk/sensors/fxls8974.h
         - file: ../../../../../middleware/issdk/sensors/fxls8974_drv.h
         - file: ../../../../../middleware/issdk/sensors/fxls8974_drv.c
-    # - group: RTOS
-    #   files: 
-    #     - file: ../../../../../RTOS/RTX/RTE/CMSIS/RTX_Config.c
-    #     - file: ../../../../../RTOS/RTX/RTE/CMSIS/RTX_Config.h
 
   layers:
     - layer: $Board-Layer$

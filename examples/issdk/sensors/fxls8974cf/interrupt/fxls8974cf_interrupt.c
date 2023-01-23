@@ -86,9 +86,15 @@ void fxls8974_int_data_ready_callback(void *pUserData)
     gFxls8974DataReady = true;
 }
 
-/*---------------------------------------------------------------------------
- * Application main thread
- *---------------------------------------------------------------------------*/
+/*! -----------------------------------------------------------------------
+ *  @brief       This is the application main thread function implementation.
+ *  @details     This function brings up the sensor and finally enters an
+ *               endless loop to continuously read available samples.
+ *  @param[in]   void *argument.
+ *  @return      void  There is no return value.
+ *  @constraints None
+ *  @reeentrant  No
+ *  -----------------------------------------------------------------------*/
 static void app_main(void *argument) {
     (void)argument;
 
@@ -106,10 +112,9 @@ static void app_main(void *argument) {
     /*! Initialize FXLS8974 pin used by base board */
     pGpioDriver->pin_init(&FXLS8974_INT1, GPIO_DIRECTION_IN, NULL, &fxls8974_int_data_ready_callback, NULL);
 
-    PRINTF("\r\n Detection pin init OK\r\n");
     /*! Initialize RGB LED pin used by base board */
     pGpioDriver->pin_init(&GREEN_LED, GPIO_DIRECTION_OUT, NULL, NULL, NULL);
-    PRINTF("\r\n Green LED init OK\r\n");
+
     /*! Initialize the I2C driver. */
     status = I2Cdrv->Initialize(I2C_S_SIGNAL_EVENT);
     if (ARM_DRIVER_OK != status)
@@ -203,6 +208,7 @@ static void app_main(void *argument) {
         ASK_USER_TO_RESUME(50); /* Ask for user input after processing 50 samples. */
     }
 }
+
 /*---------------------------------------------------------------------------
  * Application initialization
  *---------------------------------------------------------------------------*/
