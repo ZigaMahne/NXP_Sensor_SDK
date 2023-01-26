@@ -47,7 +47,7 @@ extern gpioHandleiMXSDK_t D3;
 extern gpioHandleiMXSDK_t D4;
 extern gpioHandleiMXSDK_t D5;
 extern gpioHandleiMXSDK_t D6;
-extern gpioHandleiMXSDK_t D6;
+extern gpioHandleiMXSDK_t D7;
 extern gpioHandleiMXSDK_t D8;
 extern gpioHandleiMXSDK_t D9;
 extern gpioHandleiMXSDK_t D10;

@@ -51,3 +51,6 @@ project:
       type: Board
     - layer: $Shield-Layer$
       type: Shield
+    - layer: $RTOS-Layer$
+      type: RTOS
+

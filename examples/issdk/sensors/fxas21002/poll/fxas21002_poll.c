@@ -20,6 +20,8 @@
 
 /* CMSIS Includes */
 #include "Driver_I2C.h"
+#include "cmsis_os2.h"
+
 
 /* ISSDK Includes */
 #include "issdk_hal.h"
@@ -41,14 +43,28 @@ const registerreadlist_t fxas21002_DRDY[] = {{.readFrom = FXAS21002_STATUS, .num
 const registerreadlist_t fxas21002_Output_Values[] = {
     {.readFrom = FXAS21002_OUT_X_MSB, .numBytes = FXAS21002_GYRO_DATA_SIZE}, __END_READ_DATA__};
 
-/*******************************************************************************
- * Code
- ******************************************************************************/
-/*!
- * @brief Main function
- */
-int main(void)
-{
+//-----------------------------------------------------------------------
+// Functions
+//-----------------------------------------------------------------------
+/*! -----------------------------------------------------------------------
+ *  @brief       This function is executed in case of error occurrence.
+ *  -----------------------------------------------------------------------*/
+static void Error_Handler(void) {
+  while (1) {
+  }
+}
+
+/*! -----------------------------------------------------------------------
+ *  @brief       This is the application main thread function implementation.
+ *  @details     This function brings up the sensor and finally enters an
+ *               endless loop to continuously read available samples.
+ *  @param[in]   void *argument.
+ *  @return      void  There is no return value.
+ *  @constraints None
+ *  @reeentrant  No
+ *  -----------------------------------------------------------------------*/
+static void app_main(void *argument) {
+    (void)argument;
     int32_t status;
     uint8_t dataReady;
     uint8_t data[FXAS21002_GYRO_DATA_SIZE];
@@ -56,11 +72,6 @@ int main(void)
 
     ARM_DRIVER_I2C *I2Cdrv = &I2C_S_DRIVER; // Now using the shield.h value!!!
     fxas21002_i2c_sensorhandle_t FXAS21002drv;
-
-    /*! Initialize the MCU hardware. */
-    BOARD_InitPins();
-    BOARD_BootClockRUN();
-    BOARD_InitDebugConsole();
 
     PRINTF("\r\n ISSDK FXAS21002 sensor driver example demonstration with poll mode\r\n");
 
@@ -77,7 +88,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Power Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C bus speed. */
@@ -85,7 +96,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Control Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Initialize the FXAS21002 sensor driver. */
@@ -94,7 +105,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n Sensor Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n Successfully Initiliazed Sensor\r\n");
 
@@ -106,7 +117,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n FXAS21002 Sensor Configuration Failed, Err = %d\r\n", status);
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n Successfully Applied FXAS21002 Sensor Configuration\r\n");
 
@@ -124,7 +135,7 @@ int main(void)
         if (ARM_DRIVER_OK != status)
         {
             PRINTF("\r\n Read Failed. \r\n");
-            return -1;
+            Error_Handler();
         }
 
         /*! Convert the raw sensor data to signed 16-bit container for display to the debug port. */
@@ -136,4 +147,11 @@ int main(void)
         PRINTF("\r\n Gyro X = %d  Y = %d  Z = %d\r\n", rawData.gyro[0], rawData.gyro[1], rawData.gyro[2]);
         ASK_USER_TO_RESUME(100); /* Ask for user input after processing 100 samples. */
     }
+}
+
+/*---------------------------------------------------------------------------
+ * Application initialization
+ *---------------------------------------------------------------------------*/
+void app_initialize(void) { 
+  osThreadNew(app_main, NULL, NULL);
 }

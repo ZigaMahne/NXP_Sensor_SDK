@@ -66,10 +66,8 @@ volatile bool gFxls8974DataReady = false;
 /*! -----------------------------------------------------------------------
  *  @brief       This function is executed in case of error occurrence.
  *  -----------------------------------------------------------------------*/
-static void Error_Handler(void)
-{
-  while(1)
-  {
+static void Error_Handler(void) {
+  while (1) {
   }
 }
 

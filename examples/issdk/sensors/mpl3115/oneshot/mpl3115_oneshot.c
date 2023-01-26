@@ -24,6 +24,7 @@
 // CMSIS Includes
 //-----------------------------------------------------------------------
 #include "Driver_I2C.h"
+#include "cmsis_os2.h"
 
 /* ISSDK Includes */
 #include "issdk_hal.h"
@@ -59,11 +60,25 @@ const registerreadlist_t cMpl3115OutputNormal[] = {{.readFrom = MPL3115_OUT_P_MS
 //-----------------------------------------------------------------------
 // Functions
 //-----------------------------------------------------------------------
-/*!
- * @brief Main function
- */
-int main(void)
-{
+/*! -----------------------------------------------------------------------
+ *  @brief       This function is executed in case of error occurrence.
+ *  -----------------------------------------------------------------------*/
+static void Error_Handler(void) {
+  while (1) {
+  }
+}
+
+/*! -----------------------------------------------------------------------
+ *  @brief       This is the application main thread function implementation.
+ *  @details     This function brings up the sensor and finally enters an
+ *               endless loop to continuously read available samples.
+ *  @param[in]   void *argument.
+ *  @return      void  There is no return value.
+ *  @constraints None
+ *  @reeentrant  No
+ *  -----------------------------------------------------------------------*/
+static void app_main(void *argument) {
+    (void)argument;
     int16_t tempInDegrees;
     int32_t altitudeInMeters;
     int32_t status;
@@ -75,10 +90,6 @@ int main(void)
     mpl3115_i2c_sensorhandle_t mpl3115Driver;
     registerDeviceInfo_t deviceInfo;
 
-    BOARD_InitPins();
-    BOARD_BootClockRUN();
-    BOARD_InitDebugConsole();
-
     PRINTF("\r\n ISSDK MPL3115 sensor driver example demonstration with oneshot mode\r\n");
 
     /*! Initialize the I2C driver. */
@@ -86,7 +97,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C Power mode. */
@@ -94,7 +105,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Power Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C bus speed. */
@@ -102,7 +113,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Control Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Initialize MPL3115 sensor driver. */
@@ -111,7 +122,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n Sensor Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n Successfully Initiliazed Sensor\r\n");
 
@@ -124,7 +135,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\nWrite Failed.\r\n");
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\nMPL3115 will now trigger acquisition of one sample and then read the data...\r\n");
 
@@ -135,7 +146,7 @@ int main(void)
         if (ARM_DRIVER_OK != status)
         {
             PRINTF("\r\nWrite Failed.\r\n");
-            return SENSOR_ERROR_WRITE;
+            Error_Handler();
         }
 
         do /*! Keep checking the OST FLAG for completion. */
@@ -144,7 +155,7 @@ int main(void)
             if (ARM_DRIVER_OK != status)
             {
                 PRINTF("\r\nRead Failed.\r\n");
-                return -1;
+                Error_Handler();
             }
         } /* Loop, untill sample acquisition is not completed. */
         while (0 != (dataReady & MPL3115_CTRL_REG1_OST_MASK));
@@ -154,7 +165,7 @@ int main(void)
         if (ARM_DRIVER_OK != status)
         {
             PRINTF("\r\n Read Failed. \r\n");
-            return -1;
+            Error_Handler();
         }
 
         /*! Process the sample and convert the raw sensor data. */
@@ -168,5 +179,12 @@ int main(void)
         ASK_USER_TO_RESUME(1); /* Ask for user input after processing 8 samples. */
     }
 
-    return 0;
+    Error_Handler();
+}
+
+/*---------------------------------------------------------------------------
+ * Application initialization
+ *---------------------------------------------------------------------------*/
+void app_initialize (void) {
+  osThreadNew(app_main, NULL, NULL);
 }

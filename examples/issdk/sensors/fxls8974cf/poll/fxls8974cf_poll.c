@@ -19,6 +19,7 @@
 
 /* CMSIS Includes */
 #include "Driver_I2C.h"
+#include "cmsis_os2.h"
 
 /* ISSDK Includes */
 #include "issdk_hal.h"
@@ -48,14 +49,25 @@ const registerreadlist_t cFxls8974DRDYEvent[] = {{.readFrom = FXLS8974_INT_STATU
 const registerreadlist_t cFxls8974OutputNormal[] = {{.readFrom = FXLS8974_OUT_X_LSB, .numBytes = FXLS8974_DATA_SIZE},
                                                     __END_READ_DATA__};
 
-/*******************************************************************************
- * Code
- ******************************************************************************/
-/*!
- * @brief Main function
- */
-int main(void)
-{
+/*! -----------------------------------------------------------------------
+ *  @brief       This function is executed in case of error occurrence.
+ *  -----------------------------------------------------------------------*/
+static void Error_Handler(void) {
+  while (1) {
+  }
+}
+
+/*! -----------------------------------------------------------------------
+ *  @brief       This is the application main thread function implementation.
+ *  @details     This function brings up the sensor and finally enters an
+ *               endless loop to continuously read available samples.
+ *  @param[in]   void *argument.
+ *  @return      void  There is no return value.
+ *  @constraints None
+ *  @reeentrant  No
+ *  -----------------------------------------------------------------------*/
+static void app_main(void *argument) {
+    (void)argument;
     int32_t status;
     uint8_t whoami;
     uint8_t dataReady;
@@ -65,12 +77,6 @@ int main(void)
     ARM_DRIVER_I2C *I2Cdrv = &I2C_S_DRIVER; // Now using the shield.h value!!!
     fxls8974_i2c_sensorhandle_t fxls8974Driver;
 
-    /*! Initialize the MCU hardware. */
-    BOARD_InitPins();
-    BOARD_BootClockRUN();
-    BOARD_SystickEnable();
-    BOARD_InitDebugConsole();
-
     PRINTF("\r\n ISSDK FXLS8974 sensor driver example demonstration with poll mode\r\n");
 
     /*! Initialize the I2C driver. */
@@ -78,7 +84,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C Power mode. */
@@ -86,7 +92,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Power Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C bus speed. */
@@ -94,7 +100,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Control Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Initialize FXLS8974 sensor driver. */
@@ -103,7 +109,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n Sensor Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
     if ((FXLS8964_WHOAMI_VALUE == whoami) || (FXLS8967_WHOAMI_VALUE == whoami))
     {
@@ -120,7 +126,7 @@ int main(void)
     else
     {
     	PRINTF("\r\n Bad WHO_AM_I = 0x%X\r\n", whoami);
-        return -1;
+        Error_Handler();
     }
 
     /*!  Set the task to be executed while waiting for I2C transactions to complete. */
@@ -131,7 +137,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n FXLS8974 Sensor Configuration Failed, Err = %d\r\n", status);
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n Successfully Applied FXLS8974 Sensor Configuration\r\n");
 
@@ -149,7 +155,7 @@ int main(void)
         if (ARM_DRIVER_OK != status)
         {
             PRINTF("\r\n Read Failed. \r\n");
-            return -1;
+            Error_Handler();
         }
 
         /*! Convert the raw sensor data to signed 16-bit container for display to the debug port. */
@@ -161,4 +167,10 @@ int main(void)
         PRINTF("\r\nX=%5d Y=%5d Z=%5d\r\n", rawData.accel[0], rawData.accel[1], rawData.accel[2]);
         ASK_USER_TO_RESUME(50); /* Ask for user input after processing 50 samples. */
     }
+}
+/*---------------------------------------------------------------------------
+ * Application initialization
+ *---------------------------------------------------------------------------*/
+void app_initialize(void) { 
+  osThreadNew(app_main, NULL, NULL); 
 }

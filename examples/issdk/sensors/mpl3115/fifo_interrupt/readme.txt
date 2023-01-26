@@ -1,7 +1,7 @@
 Hardware requirements
 ===================
 - Mini/micro USB cable
-- FRDM-K22F board
+- Base board
 - FRDM-STBC-AGMP03 board
 - Personal Computer
 
