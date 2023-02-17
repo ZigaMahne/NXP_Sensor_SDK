@@ -30,6 +30,7 @@
 #include "peripherals.h"
 #include "main.h"
 #include "systick_utils.h"
+#include "lpc54114.h"
 
 int main (void) {
 
