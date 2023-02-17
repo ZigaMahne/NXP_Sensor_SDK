@@ -27,6 +27,8 @@
 // CMSIS Includes
 //-----------------------------------------------------------------------
 #include "Driver_I2C.h"
+#include "cmsis_os2.h"
+
 
 //-----------------------------------------------------------------------
 // ISSDK Includes
@@ -329,6 +331,14 @@ void fxls896x_isr_callback(void *pUserData)
     bFxls896xIntFlag = true;
 }
 
+/*! -----------------------------------------------------------------------
+ *  @brief       This function is executed in case of error occurrence.
+ *  -----------------------------------------------------------------------*/
+static void Error_Handler(void) {
+  while (1) {
+  }
+}
+
 /* Create TSA table and add output variables. */
 /*!
  * @brief Target Side Addressable (TSA) table created for this application.
@@ -412,12 +422,17 @@ void FRM_Recorder_Init()
     FMSTR_RecorderCreate(1, &recBuffCfg);
 }
 
-/*!
- * @brief Main function
- */
-
-int main(void)
-{
+/*! -----------------------------------------------------------------------
+ *  @brief       This is the application main thread function implementation.
+ *  @details     This function brings up the sensor and finally enters an
+ *               endless loop to continuously read available samples.
+ *  @param[in]   void *argument.
+ *  @return      void  There is no return value.
+ *  @constraints None
+ *  @reeentrant  No
+ *  -----------------------------------------------------------------------*/
+static void app_main(void *argument) {
+    (void)argument;
     int32_t status;
     uint8_t whoami = 0;
     uint8_t regdata;
@@ -426,12 +441,6 @@ int main(void)
     ARM_DRIVER_I2C *I2Cdrv = &I2C_S_DRIVER; // Now using the shield.h value!!!
     GENERIC_DRIVER_GPIO *pGpioDriver = &Driver_GPIO_KSDK;
     fxls8962_i2c_sensorhandle_t fxls8962Driver;
-
-    /*! Initialize the MCU hardware. */
-    BOARD_InitPins();
-    BOARD_BootClockRUN();
-    BOARD_SystickEnable();
-    BOARD_InitDebugConsole();
 
     /*! Initialize FXLS8962_INT1 pin used by FRDM board */
     pGpioDriver->pin_init(&FXLS8962_INT1, GPIO_DIRECTION_IN, NULL, &fxls896x_isr_callback, NULL);
@@ -446,21 +455,21 @@ int main(void)
     status = I2Cdrv->Initialize(I2C_S_SIGNAL_EVENT);
     if (ARM_DRIVER_OK != status)
     {
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C Power mode. */
     status = I2Cdrv->PowerControl(ARM_POWER_FULL);
     if (ARM_DRIVER_OK != status)
     {
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C bus speed. */
     status = I2Cdrv->Control(ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_FAST);
     if (ARM_DRIVER_OK != status)
     {
-        return -1;
+        Error_Handler();
     }
 
     /*! Initialize FXLS8962 sensor driver. */
@@ -468,7 +477,7 @@ int main(void)
                                      &whoami);
     if (SENSOR_ERROR_NONE != status)
     {
-        return status;
+        Error_Handler();
     }
 
     /*!  Set the task to be executed while waiting for I2C transactions to complete. */
@@ -478,7 +487,7 @@ int main(void)
     status = FXLS8962_I2C_Configure(&fxls8962Driver, cFxls8962ConfigNormal);
     if (SENSOR_ERROR_NONE != status)
     {
-        return status;
+        Error_Handler();
     }
 
     /*! FreeMASTER Driver Initialization */
@@ -521,7 +530,7 @@ int main(void)
 			status = apply_register_write(fxls8962Driver, registers.offset, registers.value);
 		    if (SENSOR_ERROR_NONE != status)
 		    {
-                return status;
+                Error_Handler();
 		    }
 		    registers.trigger = 0;
             /*! Update drop down menu selection based on updated register write */
@@ -535,7 +544,7 @@ int main(void)
 			status = apply_register_read(fxls8962Driver, registers.read_offset, &(registers.read_value));
 		    if (SENSOR_ERROR_NONE != status)
 		    {
-                return status;
+                Error_Handler();
 		    }
 		    registers.read_trigger = 0;
             /*! Update drop down menu selection based on updated register read */
@@ -549,7 +558,7 @@ int main(void)
 			status = apply_register_readall(fxls8962Driver);
 		    if (SENSOR_ERROR_NONE != status)
 		    {
-                return status;
+                Error_Handler();
 		    }
 		    registers.readall_trigger = 0;
 		    registers.readall_size = FXLS896x_NUM_REGISTERS;
@@ -577,7 +586,7 @@ int main(void)
         status = FXLS8962_I2C_ReadData(&fxls8962Driver, FXLS896x_ALL_REG_READ, registers.reg_addr);
         if (ARM_DRIVER_OK != status)
         {
-            return -1;
+            Error_Handler();
         }
 
         registers.temp = registers.reg_addr[1]+25;
@@ -649,7 +658,7 @@ int main(void)
                 status = FXLS8962_I2C_Configure(&fxls8962Driver, cFxls8962ConfigNormal);
                 if (SENSOR_ERROR_NONE != status)
                 {
-                    return status;
+                    Error_Handler();
                 }
             }
         }
@@ -1055,3 +1064,9 @@ void BOARD_UART_IRQ_HANDLER(void)
 }
 #endif
 
+/*---------------------------------------------------------------------------
+ * Application initialization
+ *---------------------------------------------------------------------------*/
+void app_initialize(void) {
+  osThreadNew(app_main, NULL, NULL);
+}

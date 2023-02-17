@@ -22,18 +22,29 @@ PinsProfile:
 #include "fsl_iocon.h"
 #include "fsl_inputmux.h"
 #include "pin_mux.h"
+#include "fsl_gpio.h"
 
-#define IOCON_PIO_DIGITAL_EN          0x80u   /*!< Enables digital function */
+#define IOCON_PIO_FUNC0               0x00u   /*!< Selects pin function 1 */
 #define IOCON_PIO_FUNC1               0x01u   /*!< Selects pin function 1 */
-#define IOCON_PIO_INPFILT_OFF       0x0100u   /*!< Input filter disabled */
-#define IOCON_PIO_INV_DI              0x00u   /*!< Input function is not inverted */
 #define IOCON_PIO_MODE_INACT          0x00u   /*!< No addition pin function */
+#define IOCON_PIO_MODE_PDOWN          0x08u   /*!< Pull down resistor enabled */
+#define IOCON_PIO_MODE_PULLUP         0x10u   /*!< Pull up resistor enabled */
+#define IOCON_PIO_INV_DI              0x00u   /*!< Input function is not inverted */
+#define IOCON_PIO_INV_EN              0x20u   /*!< Input function is not inverted */
+#define IOCON_PIO_DIGITAL_EN          0x80u   /*!< Enables digital function */
+#define IOCON_PIO_INPFILT_OFF       0x0100u   /*!< Input filter disabled */
 #define IOCON_PIO_OPENDRAIN_DI        0x00u   /*!< Open drain is disabled */
 #define IOCON_PIO_SLEW_STANDARD       0x00u   /*!< Standard mode, output slew rate control is enabled */
 #define PIN0_IDX                         0u   /*!< Pin number for pin 0 in a port 0 */
 #define PIN1_IDX                         1u   /*!< Pin number for pin 1 in a port 0 */
 #define PORT0_IDX                        0u   /*!< Port index */
 
+#define BOARD_D2_INT_PORT   0U
+#define BOARD_D2_INT_PIN   10U
+
+#define BOARD_SEL_D5_GPIO GPIO
+#define BOARD_SEL_D5_PORT   0U
+#define BOARD_SEL_D5_PIN   29U
 /*
  * TEXT BELOW IS USED AS SETTING FOR THE PINS TOOL *****************************
 BOARD_InitPins:
@@ -75,8 +86,18 @@ void BOARD_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4)
     IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
   );
   IOCON_PinMuxSet(IOCON, PORT0_IDX, PIN1_IDX, port0_pin1_config); /* PORT0 PIN1 (coords: 32) is configured as FC0_TXD_SCL_MISO */
-}
+  const uint32_t port0_pin10_config = (
+    IOCON_PIO_FUNC0 |                                        /* Pin is configured as GPIO PIO0_10 */
+    IOCON_PIO_MODE_PDOWN |                                   /* Pull Down */
+    IOCON_PIO_INV_DI |                                       /* Input polarity is not inverted */
+    IOCON_PIO_DIGITAL_EN |                                   /* Enables digital function */
+    IOCON_PIO_INPFILT_OFF |                                  /* Input filter disabled */
+    IOCON_PIO_SLEW_STANDARD |                                /* Standard mode, output slew rate control is enabled */
+    IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
+  );
+  IOCON_PinMuxSet(IOCON, BOARD_D2_INT_PORT, BOARD_D2_INT_PIN, port0_pin10_config); /* PORT0 PIN10 is configured as PIO0_10 */
 
+}
 
 #define IOCON_PIO_DIGITAL_EN          0x80u   /*!< Enables digital function */
 #define IOCON_PIO_FUNC1               0x01u   /*!< Selects pin function 1 */
@@ -201,6 +222,7 @@ I2C4_InitPins:
  *END**************************************************************************/
 void I2C4_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4) */
   CLOCK_EnableClock(kCLOCK_Iocon);                           /* Enables the clock for the IOCON block. 0 = Disable; 1 = Enable.: 0x01u */
+  CLOCK_EnableClock(kCLOCK_Gpio0);
 
   const uint32_t port0_pin25_config = (
     IOCON_PIO_FUNC1 |                                        /* Pin is configured as FC4_RTS_SCL_SSEL1 */
@@ -222,8 +244,22 @@ void I2C4_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4) 
     IOCON_PIO_I2CFILTER_EN                                   /* I2C 50 ns glitch filter enabled */
   );
   IOCON_PinMuxSet(IOCON, PORT0_IDX, PIN26_IDX, port0_pin26_config); /* PORT0 PIN26 (coords: 4) is configured as FC4_CTS_SDA_SSEL0 */
-}
+  const uint32_t port0_pin29_config = (
+    IOCON_PIO_FUNC0 |                                        /* Pin is configured as GPIO PIO0_29 */
+    IOCON_PIO_MODE_PDOWN |                                   /* Pull Down */
+    IOCON_PIO_INV_DI |                                       /* Input polarity is not inverted */
+    IOCON_PIO_DIGITAL_EN |                                   /* Enables digital function */
+    IOCON_PIO_INPFILT_OFF |                                  /* Input filter disabled */
+    IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
+  );
+  IOCON_PinMuxSet(IOCON, BOARD_SEL_D5_PORT, BOARD_SEL_D5_PIN, port0_pin29_config); /* PORT0 PIN29 is configured as PIO0_29 */
 
+  gpio_pin_config_t interf_sel_conf = {
+      .pinDirection = kGPIO_DigitalOutput,
+      .outputLogic = 0U
+  };
+  GPIO_PinInit(BOARD_SEL_D5_GPIO, BOARD_SEL_D5_PORT, BOARD_SEL_D5_PIN, &interf_sel_conf);
+}
 
 #define PIO025_DIGIMODE_DIGITAL       0x01u   /*!< Select Analog/Digital mode.: Digital mode. */
 #define PIO025_FUNC_ALT0              0x00u   /*!< Selects pin function.: Alternative connection 0. */
@@ -293,6 +329,7 @@ I2C5_InitPins:
  *END**************************************************************************/
 void I2C5_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4) */
   CLOCK_EnableClock(kCLOCK_Iocon);                           /* Enables the clock for the IOCON block. 0 = Disable; 1 = Enable.: 0x01u */
+  CLOCK_EnableClock(kCLOCK_Gpio0);
 
   const uint32_t port0_pin18_config = (
     IOCON_PIO_FUNC1 |                                        /* Pin is configured as FC5_TXD_SCL_MISO */
@@ -314,6 +351,21 @@ void I2C5_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4) 
     IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
   );
   IOCON_PinMuxSet(IOCON, PORT0_IDX, PIN20_IDX, port0_pin20_config); /* PORT0 PIN20 (coords: 60) is configured as FC5_RXD_SDA_MOSI */
+  const uint32_t port0_pin29_config = (
+    IOCON_PIO_FUNC0 |                                        /* Pin is configured as GPIO PIO0_29 */
+    IOCON_PIO_MODE_PDOWN |                                   /* Pull Down */
+    IOCON_PIO_INV_DI |                                       /* Input polarity is not inverted */
+    IOCON_PIO_DIGITAL_EN |                                   /* Enables digital function */
+    IOCON_PIO_INPFILT_OFF |                                  /* Input filter disabled */
+    IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
+  );
+  IOCON_PinMuxSet(IOCON, BOARD_SEL_D5_PORT, BOARD_SEL_D5_PIN, port0_pin29_config); /* PORT0 PIN29 is configured as PIO0_29 */
+
+  gpio_pin_config_t interf_sel_conf = {
+      .pinDirection = kGPIO_DigitalOutput,
+      .outputLogic = 0U
+  };
+  GPIO_PinInit(BOARD_SEL_D5_GPIO, BOARD_SEL_D5_PORT, BOARD_SEL_D5_PIN, &interf_sel_conf);
 }
 
 
@@ -392,6 +444,7 @@ SPI3_InitPins:
  *END**************************************************************************/
 void SPI3_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4) */
   CLOCK_EnableClock(kCLOCK_Iocon);                           /* Enables the clock for the IOCON block. 0 = Disable; 1 = Enable.: 0x01u */
+  CLOCK_EnableClock(kCLOCK_Gpio0);
 
   const uint32_t port0_pin11_config = (
     IOCON_PIO_FUNC1 |                                        /* Pin is configured as FC3_SCK */
@@ -433,6 +486,21 @@ void SPI3_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4) 
     IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
   );
   IOCON_PinMuxSet(IOCON, PORT0_IDX, PIN4_IDX, port0_pin4_config); /* PORT0 PIN4 (coords: 38) is configured as FC3_SSEL2 */
+  const uint32_t port0_pin29_config = (
+    IOCON_PIO_FUNC0 |                                        /* Pin is configured as GPIO PIO0_29 */
+    IOCON_PIO_MODE_PULLUP |                                  /* Pull Down */
+    IOCON_PIO_INV_DI |                                       /* Input polarity is not inverted */
+    IOCON_PIO_DIGITAL_EN |                                   /* Enables digital function */
+    IOCON_PIO_INPFILT_OFF |                                  /* Input filter disabled */
+    IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
+  );
+  IOCON_PinMuxSet(IOCON, BOARD_SEL_D5_PORT, BOARD_SEL_D5_PIN, port0_pin29_config); /* PORT0 PIN29 is configured as PIO0_29 */
+
+  gpio_pin_config_t interf_sel_conf = {
+      .pinDirection = kGPIO_DigitalOutput,
+      .outputLogic = 1U
+  };
+  GPIO_PinInit(BOARD_SEL_D5_GPIO, BOARD_SEL_D5_PORT, BOARD_SEL_D5_PIN, &interf_sel_conf);
 }
 
 
@@ -569,6 +637,7 @@ SPI5_InitPins:
  *END**************************************************************************/
 void SPI5_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4) */
   CLOCK_EnableClock(kCLOCK_Iocon);                           /* Enables the clock for the IOCON block. 0 = Disable; 1 = Enable.: 0x01u */
+  CLOCK_EnableClock(kCLOCK_Gpio0);
 
   const uint32_t port0_pin18_config = (
     IOCON_PIO_FUNC1 |                                        /* Pin is configured as FC5_TXD_SCL_MISO */
@@ -609,6 +678,21 @@ void SPI5_InitPins(void) { /* Function assigned for the Core #0 (ARM Cortex-M4) 
     IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
   );
   IOCON_PinMuxSet(IOCON, PORT1_IDX, PIN1_IDX, port1_pin1_config); /* PORT1 PIN1 (coords: 15) is configured as FC5_SSEL2 */
+  const uint32_t port0_pin29_config = (
+    IOCON_PIO_FUNC0 |                                        /* Pin is configured as GPIO PIO0_29 */
+    IOCON_PIO_MODE_PULLUP |                                  /* Pull Down */
+    IOCON_PIO_INV_DI |                                       /* Input polarity is not inverted */
+    IOCON_PIO_DIGITAL_EN |                                   /* Enables digital function */
+    IOCON_PIO_INPFILT_OFF |                                  /* Input filter disabled */
+    IOCON_PIO_OPENDRAIN_DI                                   /* Open drain is disabled */
+  );
+  IOCON_PinMuxSet(IOCON, BOARD_SEL_D5_PORT, BOARD_SEL_D5_PIN, port0_pin29_config); /* PORT0 PIN29 is configured as PIO0_29 */
+
+  gpio_pin_config_t interf_sel_conf = {
+      .pinDirection = kGPIO_DigitalOutput,
+      .outputLogic = 1U
+  };
+  GPIO_PinInit(BOARD_SEL_D5_GPIO, BOARD_SEL_D5_PORT, BOARD_SEL_D5_PIN, &interf_sel_conf);
 }
 
 

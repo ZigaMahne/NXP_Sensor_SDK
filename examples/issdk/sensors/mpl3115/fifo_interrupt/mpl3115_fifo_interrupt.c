@@ -24,6 +24,7 @@
 // CMSIS Includes
 //-----------------------------------------------------------------------
 #include "Driver_I2C.h"
+#include "cmsis_os2.h"
 
 //-----------------------------------------------------------------------
 // ISSDK Includes
@@ -81,6 +82,15 @@ volatile uint8_t gMpl3115DataReady;
 //-----------------------------------------------------------------------
 // Functions
 //-----------------------------------------------------------------------
+
+/*! -----------------------------------------------------------------------
+ *  @brief       This function is executed in case of error occurrence.
+ *  -----------------------------------------------------------------------*/
+static void Error_Handler(void) {
+  while (1) {
+  }
+}
+
 /*! -----------------------------------------------------------------------
  *  @brief       This is the Sensor Data Ready ISR implementation.
  *  @details     This function sets the flag which indicates if a new sample(s) is available for reading.
@@ -95,16 +105,16 @@ void mpl3115_int_data_ready_callback(void *pUserData)
 }
 
 /*! -----------------------------------------------------------------------
- *  @brief       This is the The main function implementation.
- *  @details     This function invokes board initializes routines, then then brings up the sensor and
- *               finally enters an endless loop to continuously read available samples.
- *  @param[in]   void This is no input parameter.
+ *  @brief       This is the application main thread function implementation.
+ *  @details     This function brings up the sensor and finally enters an
+ *               endless loop to continuously read available samples.
+ *  @param[in]   void *argument.
  *  @return      void  There is no return value.
  *  @constraints None
  *  @reeentrant  No
  *  -----------------------------------------------------------------------*/
-int main(void)
-{
+static void app_main(void *argument) {
+    (void)argument;
     int16_t tempInDegrees;
     uint32_t pressureInPascals;
     int32_t status;
@@ -114,11 +124,6 @@ int main(void)
     ARM_DRIVER_I2C *I2Cdrv = &I2C_S_DRIVER; // Now using the shield.h value!!!
     mpl3115_i2c_sensorhandle_t mpl3115Driver;
     GENERIC_DRIVER_GPIO *pGpioDriver = &Driver_GPIO_KSDK;
-
-    /*! Initialize the MCU hardware. */
-    BOARD_InitPins();
-    BOARD_BootClockRUN();
-    BOARD_InitDebugConsole();
 
     PRINTF("\r\n ISSDK MPL3115 sensor driver example demonstration with interrupt mode.\r\n");
 
@@ -133,7 +138,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C Power mode. */
@@ -141,7 +146,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Power Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C bus speed. */
@@ -149,7 +154,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Control Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Initialize MPL3115 sensor driver. */
@@ -158,7 +163,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n Sensor Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n Successfully Initiliazed Sensor\r\n");
 
@@ -172,7 +177,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\nMPL3115 configuration failed...\r\n");
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n Successfully Applied MAG3110 Sensor Configuration\r\n");
 
@@ -199,7 +204,7 @@ int main(void)
         if (ARM_DRIVER_OK != status)
         {
             PRINTF("\r\n Read Failed. \r\n");
-            return -1;
+            Error_Handler();
         }
 
         /* Reset Counters */
@@ -220,4 +225,11 @@ int main(void)
         PRINTF("\r\nAverage Temperature = %d degC\r\n", tempInDegrees / FIFO_WMRK_SIZE);
         ASK_USER_TO_RESUME(16 / FIFO_WMRK_SIZE); /* Ask for user input after processing 16 samples. */
     }
+}
+
+/*---------------------------------------------------------------------------
+ * Application initialization
+ *---------------------------------------------------------------------------*/
+void app_initialize (void) {
+  osThreadNew(app_main, NULL, NULL);
 }

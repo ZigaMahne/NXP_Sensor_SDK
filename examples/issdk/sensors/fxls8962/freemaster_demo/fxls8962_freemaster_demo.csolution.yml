@@ -6,6 +6,8 @@ solution:
     - pack: NXP::MK22F51212_DFP@15.0.0
     - pack: NXP::FRDM-K22F_BSP@15.0.1
     - pack: ARM::CMSIS@5.9.0
+    - pack: ARM::CMSIS-Driver
+    - pack: Keil::ARM_Compiler
 
   target-types:
     - type: frdmk22f_agmp03
@@ -16,6 +18,7 @@ solution:
         - FRDM_K22F
         - FREEDOM
       variables:
+        - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/frdmk22f/frdmk22f.clayer.yml
         - Shield-Layer: ../../../../../shields/agmp03/agmp03.clayer.yml
 

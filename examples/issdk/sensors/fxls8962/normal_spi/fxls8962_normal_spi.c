@@ -32,6 +32,7 @@
 // CMSIS Includes
 //-----------------------------------------------------------------------
 #include "Driver_SPI.h"
+#include "cmsis_os2.h"
 
 //-----------------------------------------------------------------------
 // Macros
@@ -60,16 +61,24 @@ const registerreadlist_t cFxls8962OutputNormal[] = {{.readFrom = FXLS8962_OUT_X_
 // Functions
 //-----------------------------------------------------------------------
 /*! -----------------------------------------------------------------------
- *  @brief       This is the The main function implementation.
- *  @details     This function invokes board initializes routines, then then brings up the sensor and
- *               finally enters an endless loop to continuously read available samples.
- *  @param[in]   void This is no input parameter.
+ *  @brief       This function is executed in case of error occurrence.
+ *  -----------------------------------------------------------------------*/
+static void Error_Handler(void) {
+  while (1) {
+  }
+}
+
+/*! -----------------------------------------------------------------------
+ *  @brief       This is the application main thread function implementation.
+ *  @details     This function brings up the sensor and finally enters an
+ *               endless loop to continuously read available samples.
+ *  @param[in]   void *argument.
  *  @return      void  There is no return value.
  *  @constraints None
  *  @reeentrant  No
  *  -----------------------------------------------------------------------*/
-int main(void)
-{
+static void app_main(void *argument) {
+    (void)argument;
     int32_t status;
     uint8_t whoami;
     uint8_t gFxls8962DataReady;
@@ -79,12 +88,6 @@ int main(void)
     ARM_DRIVER_SPI *pSPIdriver = &SPI_S_DRIVER;
     fxls8962_spi_sensorhandle_t fxls8962Driver;
 
-    /*! Initialize the MCU hardware. */
-    BOARD_InitPins();
-    BOARD_BootClockRUN();
-    BOARD_SystickEnable();
-    BOARD_InitDebugConsole();
-
     PRINTF("\r\n ISSDK FXLS896x sensor driver example demonstration for SPI with Poll Mode.\r\n");
 
     /*! Initialize the SPI driver. */
@@ -92,7 +95,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n SPI Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the SPI Power mode. */
@@ -100,7 +103,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n SPI Power Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the SPI Slave speed. */
@@ -108,7 +111,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n SPI Control Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Initialize the fxls8962 sensor driver. */
@@ -117,7 +120,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n FXLS896x Sensor Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
     if ((FXLS8964_WHOAMI_VALUE == whoami) || (FXLS8967_WHOAMI_VALUE == whoami))
     {
@@ -144,7 +147,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n FXLS896x Sensor Configuration Failed, Err = %d\r\n", status);
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n Successfully Applied FXLS896x Sensor Configuration\r\n");
 
@@ -162,7 +165,7 @@ int main(void)
         if (ARM_DRIVER_OK != status)
         {
             PRINTF("\r\nRead Failed.\r\n");
-            return -1;
+            Error_Handler();
         }
 
         /*! Convert the raw sensor data for display to the debug port. */
@@ -173,4 +176,11 @@ int main(void)
         /* NOTE: PRINTF is relatively expensive in terms of CPU time, specially when used with-in execution loop. */
         PRINTF("\r\n X=%5d Y=%5d Z=%5d\r\n", rawData.accel[0], rawData.accel[1], rawData.accel[2]);
     }
+}
+
+/*---------------------------------------------------------------------------
+ * Application initialization
+ *---------------------------------------------------------------------------*/
+void app_initialize (void) {
+  osThreadNew(app_main, NULL, NULL);
 }

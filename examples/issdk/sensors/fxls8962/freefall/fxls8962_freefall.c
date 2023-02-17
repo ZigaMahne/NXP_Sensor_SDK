@@ -24,6 +24,7 @@
 // CMSIS Includes
 //-----------------------------------------------------------------------
 #include "Driver_I2C.h"
+#include "cmsis_os2.h"
 
 /* ISSDK Includes */
 #include "issdk_hal.h"
@@ -87,28 +88,37 @@ volatile bool gFxls8962EventReady = false;
 //-----------------------------------------------------------------------
 // Functions
 //-----------------------------------------------------------------------
+/*! -----------------------------------------------------------------------
+ *  @brief       This function is executed in case of error occurrence.
+ *  -----------------------------------------------------------------------*/
+static void Error_Handler(void) {
+  while (1) {
+  }
+}
+
 /*! @brief This is the Sensor Data Ready ISR implementation. */
 void fxls8962_int_event_ready_callback(void *pUserData)
 { /*! @brief Set flag to indicate Sensor has signalled data ready. */
     gFxls8962EventReady = true;
 }
 
-/*!
- * @brief Main function
- */
-int main(void)
-{
+/*! -----------------------------------------------------------------------
+ *  @brief       This is the application main thread function implementation.
+ *  @details     This function brings up the sensor and finally enters an
+ *               endless loop to continuously read available samples.
+ *  @param[in]   void *argument.
+ *  @return      void  There is no return value.
+ *  @constraints None
+ *  @reeentrant  No
+ *  -----------------------------------------------------------------------*/
+static void app_main(void *argument) {
+    (void)argument;
     int32_t status;
     uint8_t whoami;
     uint8_t dataReady;
     ARM_DRIVER_I2C *I2Cdrv = &I2C_S_DRIVER; // Now using the shield.h value!!!
     fxls8962_i2c_sensorhandle_t fxls8962Driver;
     GENERIC_DRIVER_GPIO *pGpioDriver = &Driver_GPIO_KSDK;
-
-    BOARD_InitPins();
-    BOARD_BootClockRUN();
-    BOARD_SystickEnable();
-    BOARD_InitDebugConsole();
 
     PRINTF("\r\n ISSDK FXLS8962 sensor driver example for Freefall Detection. \r\n");
 
@@ -120,7 +130,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C Power mode. */
@@ -128,7 +138,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Power Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Set the I2C bus speed. */
@@ -136,7 +146,7 @@ int main(void)
     if (ARM_DRIVER_OK != status)
     {
         PRINTF("\r\n I2C Control Mode setting Failed\r\n");
-        return -1;
+        Error_Handler();
     }
 
     /*! Initialize the FXLS8962 sensor driver. */
@@ -145,7 +155,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n Sensor Initialization Failed\r\n");
-        return -1;
+        Error_Handler();
     }
     if ((FXLS8964_WHOAMI_VALUE == whoami) || (FXLS8967_WHOAMI_VALUE == whoami))
     {
@@ -175,7 +185,7 @@ int main(void)
     if (SENSOR_ERROR_NONE != status)
     {
         PRINTF("\r\n FXLS8962 Sensor Configuration Failed, Err = %d \r\n", status);
-        return -1;
+        Error_Handler();
     }
     PRINTF("\r\n FXLS8962 now active and detecting freefall... \r\n");
 
@@ -197,7 +207,7 @@ int main(void)
         if (SENSOR_ERROR_NONE != status)
         {
             PRINTF("\r\n Read Failed\r\n");
-            return -1;
+            Error_Handler();
         }
 
         if (FXLS8962_SDCD_INT_SRC2_WT_EA_EVENT_NO == (dataReady & FXLS8962_SDCD_INT_SRC2_WT_EA_MASK))
@@ -209,6 +219,14 @@ int main(void)
         PRINTF("\r\n Freefall detected !!!\r\n");
     }
 }
+
+/*---------------------------------------------------------------------------
+ * Application initialization
+ *---------------------------------------------------------------------------*/
+void app_initialize(void) {
+  osThreadNew(app_main, NULL, NULL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EOF
 ////////////////////////////////////////////////////////////////////////////////

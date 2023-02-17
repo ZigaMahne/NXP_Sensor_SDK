@@ -7,7 +7,14 @@ solution:
     - pack: NXP::LPC54114_DFP@13.0.0
     - pack: NXP::FRDM-K22F_BSP@15.0.1
     - pack: NXP::LPCXpresso54114_BSP@13.0.0
+    - pack: NXP::MIMXRT1052_DFP@15.1.0
+    - pack: NXP::EVKB-IMXRT1050_BSP@15.1.0
+    - pack: Keil::IMXRT1050-EVKB_BSP@1.1.1
+    - pack: Keil::iMXRT105x_MWP@1.5.1
     - pack: ARM::CMSIS@5.9.0
+    - pack: ARM::CMSIS-Driver
+    - pack: Keil::ARM_Compiler
+
 
   target-types:
     - type: frdmk22f_agmp03
@@ -18,6 +25,7 @@ solution:
         - FRDM_K22F
         - FREEDOM
       variables:
+        - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/frdmk22f/frdmk22f.clayer.yml
         - Shield-Layer: ../../../../../shields/agmp03/agmp03.clayer.yml
     - type: lpcxpresso54114_agmp03
@@ -26,7 +34,17 @@ solution:
       define:
         - CPU_LPC54114J256BD64_cm4
       variables:
+        - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/lpcxpresso54114/lpcxpresso54114.clayer.yml
+        - Shield-Layer: ../../../../../shields/agmp03/agmp03.clayer.yml
+    - type: IMXRT1050-EVKB_agmp03
+      board: NXP::EVKB-IMXRT1050_MDK
+   #  device: NXP::MIMXRT1052DVL6B
+      define:
+        - CPU_MIMXRT1052DVL6B
+      variables:
+        - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
+        - Board-Layer:  ../../../../../boards/IMXRT1050-EVKB/IMXRT1050-EVKB.clayer.yml
         - Shield-Layer: ../../../../../shields/agmp03/agmp03.clayer.yml
 
   build-types:

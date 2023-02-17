@@ -8,6 +8,8 @@ solution:
     - pack: NXP::FRDM-K22F_BSP@15.0.1
     - pack: NXP::LPCXpresso54114_BSP@13.0.0
     - pack: ARM::CMSIS@5.9.0
+    - pack: ARM::CMSIS-Driver
+    - pack: Keil::ARM_Compiler
 
   target-types:
     - type: frdmk22f_a8974
@@ -18,6 +20,7 @@ solution:
         - FRDM_K22F
         - FREEDOM
       variables:
+        - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/frdmk22f/frdmk22f.clayer.yml
         - Shield-Layer: ../../../../../shields/a8974/a8974.clayer.yml
     - type: lpcxpresso54114_a8974
@@ -26,6 +29,7 @@ solution:
       define:
         - CPU_LPC54114J256BD64_cm4
       variables:
+        - RTOS-Layer:   ../../../../../RTOS/RTX/RTOS.clayer.yml
         - Board-Layer:  ../../../../../boards/lpcxpresso54114/lpcxpresso54114.clayer.yml
         - Shield-Layer: ../../../../../shields/a8974/a8974.clayer.yml
 
