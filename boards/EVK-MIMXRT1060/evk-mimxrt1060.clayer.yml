@@ -30,8 +30,8 @@ layer:
         - Heap: 1024
 
   packs:
-    - pack: NXP::MIMXRT1062_DFP@15.1.0
-    - pack: NXP::EVK-MIMXRT1060_BSP@15.1.0
+    - pack: NXP::MIMXRT1062_DFP@17.1.0
+    - pack: NXP::EVK-MIMXRT1060_BSP@17.0.0
     - pack: ARM::CMSIS@5.9.0
     - pack: Keil::ARM_Compiler
 
@@ -49,7 +49,7 @@ layer:
         - --predefine="-DXIP_BOOT_HEADER_ENABLE=1"
 
   components:
-    - component: NXP::Board Support:SDK Drivers:evkmimxrt1060
+    - component: NXP::Board Support:SDK Drivers:evkmimxrt1060 xip
     - component: NXP::Board Support:SDK Project Template:project_template&evkmimxrt1060
     - component: ARM::CMSIS:CORE
     - component: ARM::CMSIS Driver:VIO:Custom
