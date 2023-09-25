@@ -2,6 +2,7 @@ layer:
   type: Board
   for-board: NXP::EVK-MIMXRT1060
   description: EVK-MIMXRT1060 Development Board
+  for-device: NXP::MIMXRT1062DVL6A
 
   connections:
     - connect: EVK-MIMXRT1060 Board
